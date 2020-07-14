@@ -92,22 +92,22 @@ class CarController():
         CanBus.POWERTRAIN, apply_steer, idx, lkas_enabled))
 
     ### GAS/BRAKE ###
+    if not self.car_fingerprint in NO_ASCM_CARS:
+      # no output if not enabled, but keep sending keepalive messages
+      # treat pedals as one
+      final_pedal = actuators.gas - actuators.brake
 
-    # no output if not enabled, but keep sending keepalive messages
-    # treat pedals as one
-    final_pedal = actuators.gas - actuators.brake
+      # *** apply pedal hysteresis ***
+      final_brake, self.brake_steady = actuator_hystereses(
+        final_pedal, self.pedal_steady)
 
-    # *** apply pedal hysteresis ***
-    final_brake, self.brake_steady = actuator_hystereses(
-      final_pedal, self.pedal_steady)
-
-    if not enabled:
-      # Stock ECU sends max regen when not enabled.
-      apply_gas = P.MAX_ACC_REGEN
-      apply_brake = 0
-    else:
-      apply_gas = int(round(interp(final_pedal, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
-      apply_brake = int(round(interp(final_pedal, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
+      if not enabled:
+        # Stock ECU sends max regen when not enabled.
+        apply_gas = P.MAX_ACC_REGEN
+        apply_brake = 0
+      else:
+        apply_gas = int(round(interp(final_pedal, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
+        apply_brake = int(round(interp(final_pedal, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
 
     if not self.car_fingerprint in NO_ASCM_CARS:
       # Gas/regen and brakes - all at 25Hz

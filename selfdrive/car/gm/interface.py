@@ -4,7 +4,7 @@ from common.numpy_fast import interp
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.drive_helpers import create_event, EventTypes as ET
 from selfdrive.car.gm.values import CAR, Ecu, ECU_FINGERPRINT, CruiseButtons, \
-                                    AccState, FINGERPRINTS
+                                    AccState, NO_ASCM_CARS, FINGERPRINTS
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 
@@ -85,7 +85,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerRateCost = 1.0
     ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
 
-    if candidate == CAR.VOLT:
+    if candidate == CAR.VOLT or candidate == CAR.VOLT_NO_ASCM:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
       ret.minEnableSpeed = 8 * CV.MPH_TO_MS
       ret.mass = 1607. + STD_CARGO_KG
@@ -228,8 +228,9 @@ class CarInterface(CarInterfaceBase):
       events.append(create_event('parkBrake', [ET.NO_ENTRY, ET.USER_DISABLE]))
     if ret.cruiseState.standstill:
       events.append(create_event('resumeRequired', [ET.WARNING]))
-    if self.CS.pcm_acc_status == AccState.FAULTED:
-      events.append(create_event('controlsFailed', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
+    if not self.CS.car_fingerprint in NO_ASCM_CARS:
+      if self.CS.pcm_acc_status == AccState.FAULTED:
+        events.append(create_event('controlsFailed', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
 
     # handle button presses
     for b in ret.buttonEvents:

@@ -73,7 +73,7 @@ class CarState(CarStateBase):
     self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]['CruiseState']
 
     regen_pressed = False
-    if self.car_fingerprint == CAR.VOLT:
+    if self.car_fingerprint == CAR.VOLT or self.car_fingerprint == CAR.VOLT_NO_ASCM:
       regen_pressed = bool(pt_cp.vl["EBCMRegenPaddle"]['RegenPaddle'])
 
     # Regen braking is braking
@@ -84,6 +84,7 @@ class CarState(CarStateBase):
     # 0 - inactive, 1 - active, 2 - temporary limited, 3 - failed
     self.lkas_status = pt_cp.vl["PSCMStatus"]['LKATorqueDeliveredStatus']
     self.steer_warning = not is_eps_status_ok(self.lkas_status, self.car_fingerprint)
+ #   self.steer_not_allowed = not is_eps_status_ok(self.lkas_status, self.car_fingerprint)
 
     return ret
 
@@ -124,7 +125,7 @@ class CarState(CarStateBase):
       ("DistanceButton", "ASCMSteeringButton", 0),
     ]
 
-    if CP.carFingerprint == CAR.VOLT:
+    if CP.carFingerprint == CAR.VOLT or self.car_fingerprint == CAR.VOLT_NO_ASCM:
       signals += [
         ("RegenPaddle", "EBCMRegenPaddle", 0),
       ]

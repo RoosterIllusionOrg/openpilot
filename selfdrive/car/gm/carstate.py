@@ -73,7 +73,7 @@ class CarState(CarStateBase):
     self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]['CruiseState']
 
     regen_pressed = False
-    if self.car_fingerprint == CAR.VOLT or self.car_fingerprint == CAR.VOLT_NO_ASCM:
+    if self.car_fingerprint in (CAR.VOLT, CAR.VOLT_NO_ASCM):
       regen_pressed = bool(pt_cp.vl["EBCMRegenPaddle"]['RegenPaddle'])
 
     # Regen braking is braking
@@ -125,7 +125,7 @@ class CarState(CarStateBase):
       ("DistanceButton", "ASCMSteeringButton", 0),
     ]
 
-    if CP.carFingerprint == CAR.VOLT or self.car_fingerprint == CAR.VOLT_NO_ASCM:
+    if CP.carFingerprint in (CAR.VOLT, CAR.VOLT_NO_ASCM):
       signals += [
         ("RegenPaddle", "EBCMRegenPaddle", 0),
       ]
